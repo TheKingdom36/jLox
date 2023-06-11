@@ -22,32 +22,30 @@ class Parser {
 
     private Expr assignment(){
 
-Expr expr; 
+        Expr expr = equality();
 
-        Token nextToken = peek();
+        if (match(EQUAL)) {
+            Token equals = previous();
+            Expr value = assignment();
 
-        Expr e = new Expr.Unary(IDENTIFIER, expr)
+            if (expr instanceof Expr.Variable) {
+                Token name = ((Expr.Variable)expr).name;
+                return new Expr.Assign(name, value);
+            }
 
-        if(nextToken.type == TokenType.IDENTIFIER){
-        Token equals= consume(TokenType.EQUAL, "Expected equals");
-
-        Expr right = assignment();
-
-            expr = new Expr.Binary(nextToken,equals , right);
-        }else{
-            
+            error(equals, "Invalid assignment target.");
         }
-        
-        return null;
+
+        return expr;
     }
 
     private Expr equality() {
         Expr expr = comparison();
 
         while (match(BANG_EQUAL, EQUAL_EQUAL)) {
-        Token operator = previous();
-        Expr right = comparison();
-        expr = new Expr.Binary(expr, operator, right);
+            Token operator = previous();
+            Expr right = comparison();
+            expr = new Expr.Binary(expr, operator, right);
         }
 
         return expr;
@@ -57,9 +55,9 @@ Expr expr;
         Expr expr = term();
 
         while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-        Token operator = previous();
-        Expr right = term();
-        expr = new Expr.Binary(expr, operator, right);
+            Token operator = previous();
+            Expr right = term();
+            expr = new Expr.Binary(expr, operator, right);
         }
 
         return expr;
@@ -69,9 +67,9 @@ Expr expr;
         Expr expr = factor();
 
         while (match(MINUS, PLUS)) {
-        Token operator = previous();
-        Expr right = factor();
-        expr = new Expr.Binary(expr, operator, right);
+            Token operator = previous();
+            Expr right = factor();
+            expr = new Expr.Binary(expr, operator, right);
         }
 
         return expr;
@@ -156,8 +154,20 @@ Expr expr;
 
     private Stmt statement() {
         if (match(PRINT)) return printStatement();
+        if (match(LEFT_BRACE)) return new Stmt.Block(block());
     
         return expressionStatement();
+    }
+
+    private List<Stmt> block() {
+        List<Stmt> statements = new ArrayList<>();
+
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+
+        consume(RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
     }
 
     private Stmt printStatement() {
@@ -179,7 +189,7 @@ Expr expr;
     }
 
     private ParseError error(Token token, String message) {
-        Lox.error(token, message);
+        jLox.error(token, message);
         return new ParseError();
     }
 
