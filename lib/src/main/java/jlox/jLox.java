@@ -8,13 +8,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-class Lox {
+class jLox {
 
   static boolean hadError = false;
   static boolean hadRuntimeError = false;
 
   private static final Interpreter interpreter = new Interpreter();
-
   
   public static void main(String[] args) throws IOException {
     if (args.length > 1) {
