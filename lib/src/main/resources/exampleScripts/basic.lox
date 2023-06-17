@@ -5,6 +5,10 @@ var c = "global c";
   var a = "outer a";
   var b = "outer b";
   {
+
+  if(3<3){
+    print "hello";
+  }
     var a = "inner a";
     print a;
     print b;
